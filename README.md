@@ -32,7 +32,7 @@ Built with type safety, scalability, and developer experience in mind. A batteri
 - [TanStack Table](https://tanstack.com/table/v8) - Headless UI for building powerful tables & datagrids
 - [Zustand](https://zustand-demo.pmnd.rs) - An unopinionated, small, fast and scalable bearbones state-management solution
 - [React Hook Form](https://react-hook-form.com) - Performant, flexible and extensible forms with easy-to-use validation
-- [Zod](https://zod.dev) - TypeScript-first schema validation with static type inference
+- [Typebox](https://github.com/sinclairzx81/typebox) - Json Schema Type Builder with Static Type Resolution for TypeScript
 - [React Testing Library](https://testing-library.com) - A very light-weight, best practice first, solution for testing React components
 - [Vitest](https://vitest.dev) - A blazing fast unit test framework powered by Vite
 - [Playwright](https://playwright.dev) - Enables reliable end-to-end testing for modern web apps
@@ -301,7 +301,7 @@ A simplified list can be found in the [Overview](#overview) section.
 ### Forms
 
 - [React Hook Form](https://react-hook-form.com)
-- [Zod](https://zod.dev)
+- [Typebox](https://github.com/sinclairzx81/typebox)
 
 ### Data Visualization
 
