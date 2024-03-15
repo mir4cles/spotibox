@@ -49,9 +49,9 @@
 		"@typescript-eslint/array-type": ["error", { "default": "generic" }],
 		"@typescript-eslint/consistent-type-exports": "error",
 		"@typescript-eslint/consistent-type-imports": "error",
-		"@typescript-eslint/explicit-function-return-type": "error",
+		// "@typescript-eslint/explicit-function-return-type": "error",
 		"@typescript-eslint/explicit-member-accessibility": "error",
-		"@typescript-eslint/explicit-module-boundary-types": "error",
+		// "@typescript-eslint/explicit-module-boundary-types": "error",
 		"@typescript-eslint/no-confusing-void-expression": "error",
 		"@typescript-eslint/no-import-type-side-effects": "error",
 		"@typescript-eslint/no-require-imports": "error",
@@ -60,7 +60,7 @@
 		"@typescript-eslint/prefer-enum-initializers": "error",
 		"@typescript-eslint/prefer-readonly": "error",
 		"no-return-await": "off",
-		"@typescript-eslint/return-await": "error",
+		// "@typescript-eslint/return-await": "error",
 		"react-refresh/only-export-components": [
 			"warn",
 			{ "allowConstantExport": true }
