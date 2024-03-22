@@ -61,7 +61,7 @@ const Library = ({ sdk }: { sdk: SpotifyApi }) => {
 					<TableHead className="text-right">Danceability</TableHead>
 					<TableHead className="text-right">Key</TableHead>
 					<TableHead className="text-right">Tempo</TableHead>
-					<TableHead className="text-right">Accousticness</TableHead>
+					<TableHead className="text-right">Instrumentalness</TableHead>
 					<TableHead className="text-right">Valence</TableHead>
 				</TableRow>
 			</TableHeader>
@@ -86,10 +86,14 @@ const Library = ({ sdk }: { sdk: SpotifyApi }) => {
 							</TableCell>
 							<TableCell className="text-right">{audioFeature?.key}</TableCell>
 							<TableCell className="text-right">
-								{audioFeature?.tempo}
+								{audioFeature?.tempo.toLocaleString("en", {
+									style: "decimal",
+									maximumFractionDigits: 2,
+									minimumFractionDigits: 2,
+								})}
 							</TableCell>
 							<TableCell className="text-right">
-								{audioFeature?.acousticness.toLocaleString("en", {
+								{audioFeature?.instrumentalness.toLocaleString("en", {
 									style: "percent",
 								})}
 							</TableCell>
