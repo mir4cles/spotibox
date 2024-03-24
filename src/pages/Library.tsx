@@ -7,6 +7,7 @@ import {
 } from "@spotify/web-api-ts-sdk";
 
 import { Fragment, useEffect, useState } from "react";
+import { useSpotify } from "../hooks/UseSpotify";
 import {
 	Table,
 	TableBody,
@@ -16,21 +17,15 @@ import {
 	TableHeader,
 	TableRow,
 } from "../components/ui/table";
-import { useSpotify } from "../hooks/UseSpotify";
 
 const Library = ({ sdk }: { sdk: SpotifyApi }) => {
 	const [savedTracks, setSavedTracks] = useState<Page<SavedTrack>>();
 	const [audioFeatures, setAudioFeatures] = useState<Array<AudioFeatures>>();
 
-	console.log({ savedTracks, audioFeatures });
-
 	useEffect(() => {
 		// eslint-disable-next-line @typescript-eslint/no-floating-promises
 		(async () => {
-			const savedTracksResults = await sdk.currentUser.tracks.savedTracks(
-				50,
-				50
-			);
+			const savedTracksResults = await sdk.currentUser.tracks.savedTracks();
 			setSavedTracks(savedTracksResults);
 		})();
 	}, [sdk]);
