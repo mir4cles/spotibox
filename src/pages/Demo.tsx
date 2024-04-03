@@ -1,44 +1,90 @@
 import {
 	Scopes,
+	type AudioFeatures,
 	type SpotifyApi,
 	type SavedTrack,
 } from "@spotify/web-api-ts-sdk";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment } from "react";
 import { columns } from "../features/saved-tracks/columns";
 import { DataTable } from "../features/saved-tracks/components/data-table";
 import { useSpotify } from "../hooks/UseSpotify";
+import { useQuery } from "@tanstack/react-query";
 
-async function getData(sdk: SpotifyApi): Promise<Array<SavedTrack>> {
-	// Fetch data from your API here.
-	let offset = 0;
+const savedTracksData: Array<SavedTrack> = [];
+const audioFeaturesData: Array<AudioFeatures> = [];
+
+function combineData(): Array<SavedTrack & { audioFeature?: AudioFeatures }> {
+	const combinedData = savedTracksData.map((savedTrack) => {
+		const audioFeature = audioFeaturesData.find(
+			(audioFeature) => audioFeature.id === savedTrack.track.id
+		);
+
+		return {
+			...savedTrack,
+			audioFeature,
+		};
+	});
+
+	return combinedData;
+}
+
+async function fetchAllPaginatedData(offset = 0, sdk: SpotifyApi) {
 	let hasMore = true;
-	let tracks: Array<SavedTrack> = [];
 
-	while (hasMore) {
-		const savedTracks = await sdk.currentUser.tracks.savedTracks(50, offset);
-		tracks = [...tracks, ...savedTracks.items];
-		hasMore = savedTracks.next !== null;
-		offset += 50;
+	try {
+		const savedTracksResponse = await sdk.currentUser.tracks.savedTracks(
+			50,
+			offset
+		);
+		const { items, next, total } = savedTracksResponse;
+		hasMore = next !== null;
+
+		const audioFeatures = await sdk.tracks.audioFeatures(
+			items.map((item) => item.track.id)
+		);
+
+		savedTracksData.push(...items);
+
+		audioFeaturesData.push(...audioFeatures);
+
+		if (hasMore) {
+			offset += 50;
+			await new Promise((resolve) => {
+				setTimeout(resolve, 200);
+			});
+			console.debug(offset, "/", total);
+			await fetchAllPaginatedData(offset, sdk);
+			return;
+		}
+
+		// console.clear();
+		console.info("Data complete.");
+
+		return;
+	} catch (error) {
+		console.error(error);
 	}
-
-	return tracks;
 }
 
 const Demo = ({ sdk }: { sdk: SpotifyApi }) => {
-	const [data, setData] = useState<Array<SavedTrack>>([]);
+	const query = useQuery({
+		queryKey: ["savedTracks"],
+		queryFn: async () => {
+			await fetchAllPaginatedData(0, sdk);
+			const data = combineData();
+			return data;
+		},
+	});
 
-	useEffect(() => {
-		const fetchData = async () => {
-			const tracks = await getData(sdk);
-			setData(tracks);
-		};
+	console.log(query);
 
-		void fetchData();
-	}, [sdk]);
+	if (!query.data) {
+		return <Fragment>Loading...</Fragment>;
+	}
 
 	return (
 		<div className="container mx-auto py-10">
-			<DataTable columns={columns} data={data} />
+			<DataTable columns={columns} data={query.data} />
 		</div>
 	);
 };

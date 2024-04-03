@@ -1,6 +1,6 @@
 "use client";
 
-import type { SavedTrack } from "@spotify/web-api-ts-sdk";
+import type { AudioFeatures, SavedTrack } from "@spotify/web-api-ts-sdk";
 import type { ColumnDef } from "@tanstack/react-table";
 
 // This type is used to define the shape of our data.
@@ -19,7 +19,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 // export type CustomSavedTracks = SavedTrack & { audioFeatures: AudioFeatures };
 
-export const columns: Array<ColumnDef<SavedTrack>> = [
+export const columns: Array<
+	ColumnDef<SavedTrack & { audioFeature?: AudioFeatures }>
+> = [
 	{
 		accessorKey: "track.name",
 		header: "Name",
@@ -36,24 +38,24 @@ export const columns: Array<ColumnDef<SavedTrack>> = [
 		accessorKey: "added_at",
 		header: "Added at",
 	},
-	// {
-	// 	accessorKey: "danceability",
-	// 	header: "Danceability",
-	// },
-	// {
-	// 	accessorKey: "key",
-	// 	header: "Key",
-	// },
-	// {
-	// 	accessorKey: "tempo",
-	// 	header: "Tempo",
-	// },
-	// {
-	// 	accessorKey: "instrumentalness",
-	// 	header: "Instrumentalness",
-	// },
-	// {
-	// 	accessorKey: "valence",
-	// 	header: "Valence",
-	// },
+	{
+		accessorKey: "audioFeature.danceability",
+		header: "Danceability",
+	},
+	{
+		accessorKey: "audioFeature.key",
+		header: "Key",
+	},
+	{
+		accessorKey: "audioFeature.tempo",
+		header: "Tempo",
+	},
+	{
+		accessorKey: "audioFeature.instrumentalness",
+		header: "Instrumentalness",
+	},
+	{
+		accessorKey: "audioFeature.valence",
+		header: "Valence",
+	},
 ];
