@@ -74,6 +74,8 @@ const Demo = ({ sdk }: { sdk: SpotifyApi }) => {
 			const data = combineData();
 			return data;
 		},
+		staleTime: Number.POSITIVE_INFINITY,
+		gcTime: Number.POSITIVE_INFINITY,
 	});
 
 	console.log(query);
