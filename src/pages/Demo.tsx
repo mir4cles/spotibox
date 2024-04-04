@@ -1,14 +1,14 @@
 import {
 	Scopes,
 	type AudioFeatures,
-	type SpotifyApi,
 	type SavedTrack,
+	type SpotifyApi,
 } from "@spotify/web-api-ts-sdk";
+import { useQuery } from "@tanstack/react-query";
 import { Fragment } from "react";
 import { columns } from "../features/saved-tracks/columns";
 import { DataTable } from "../features/saved-tracks/components/data-table";
 import { useSpotify } from "../hooks/UseSpotify";
-import { useQuery } from "@tanstack/react-query";
 
 const savedTracksData: Array<SavedTrack> = [];
 const audioFeaturesData: Array<AudioFeatures> = [];
@@ -50,7 +50,7 @@ async function fetchAllPaginatedData(offset = 0, sdk: SpotifyApi) {
 		if (hasMore) {
 			offset += 50;
 			await new Promise((resolve) => {
-				setTimeout(resolve, 200);
+				setTimeout(resolve, 100);
 			});
 			console.debug(offset, "/", total);
 			await fetchAllPaginatedData(offset, sdk);
@@ -75,10 +75,7 @@ const Demo = ({ sdk }: { sdk: SpotifyApi }) => {
 			return data;
 		},
 		staleTime: Number.POSITIVE_INFINITY,
-		gcTime: Number.POSITIVE_INFINITY,
 	});
-
-	console.log(query);
 
 	if (!query.data) {
 		return <Fragment>Loading...</Fragment>;

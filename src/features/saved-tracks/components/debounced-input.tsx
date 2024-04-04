@@ -1,4 +1,5 @@
-import { useState, type FC, useEffect } from "react";
+import { useEffect, useState, type FC } from "react";
+import { Input } from "../../../components/ui/input";
 
 type DebouncedInputProps = {
 	value: string | number;
@@ -26,10 +27,11 @@ const DebouncedInput: FC<DebouncedInputProps> = ({
 		return () => {
 			clearTimeout(timeout);
 		};
-	}, [debounce, onChange, value]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debounce, value]);
 
 	return (
-		<input
+		<Input
 			{...props}
 			value={value}
 			onChange={(event) => {

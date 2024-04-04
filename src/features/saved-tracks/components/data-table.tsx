@@ -1,15 +1,17 @@
 import {
 	flexRender,
 	getCoreRowModel,
+	getFilteredRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
 	useReactTable,
 	type ColumnDef,
 	type ColumnFiltersState,
-	type PaginationState,
 	type SortingState,
-	getPaginationRowModel,
-	getSortedRowModel,
-	getFilteredRowModel,
 } from "@tanstack/react-table";
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../../../components/ui/button";
 import {
 	Table,
 	TableBody,
@@ -18,11 +20,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../../../components/ui/table";
-import { Button } from "../../../components/ui/button";
-import { useState } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { Input } from "../../../components/ui/input";
-import Filter from "./filter";
+import DebouncedInput from "./debounced-input";
 
 interface DataTableProps<TData, TValue> {
 	columns: Array<ColumnDef<TData, TValue>>;
@@ -33,11 +31,6 @@ export function DataTable<TData, TValue>({
 	columns,
 	data,
 }: DataTableProps<TData, TValue>) {
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 15,
-	});
-
 	const [sorting, setSorting] = useState<SortingState>([]);
 
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -50,26 +43,94 @@ export function DataTable<TData, TValue>({
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		onColumnFiltersChange: setColumnFilters,
-		onPaginationChange: setPagination,
 		onSortingChange: setSorting,
 		state: {
-			pagination,
 			sorting,
 			columnFilters,
+		},
+		initialState: {
+			pagination: {
+				pageSize: 50,
+			},
 		},
 	});
 
 	return (
 		<div>
-			<div className="flex items-center py-4">
-				<Input
-					placeholder="Filter artist..."
-					value={(table.getColumn("artists")?.getFilterValue() as string) ?? ""}
-					onChange={(event) =>
-						table.getColumn("artists")?.setFilterValue(event.target.value)
+			<div className="flex items-center py-4 gap-4">
+				<DebouncedInput
+					placeholder="Filter title..."
+					value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+					onChange={(value) => table.getColumn("title")?.setFilterValue(value)}
+					className="max-w-sm"
+				/>
+				<DebouncedInput
+					type="number"
+					placeholder="BPM min..."
+					value={
+						(
+							table.getColumn("tempo")?.getFilterValue() as [number, number]
+						)?.[0] ?? ""
+					}
+					onChange={(value) =>
+						table
+							.getColumn("tempo")
+							?.setFilterValue((old: [number, number]) => [value, old?.[1]])
 					}
 					className="max-w-sm"
 				/>
+				<DebouncedInput
+					type="number"
+					placeholder="BPM max..."
+					value={
+						(
+							table.getColumn("tempo")?.getFilterValue() as [number, number]
+						)?.[1] ?? ""
+					}
+					onChange={(value) =>
+						table
+							.getColumn("tempo")
+							?.setFilterValue((old: [number, number]) => [old?.[0], value])
+					}
+					className="max-w-sm"
+				/>
+				<DebouncedInput
+					type="number"
+					placeholder="NRG min..."
+					value={
+						(
+							table.getColumn("energy")?.getFilterValue() as [number, number]
+						)?.[0] ?? ""
+					}
+					onChange={(value) =>
+						table
+							.getColumn("energy")
+							?.setFilterValue((old: [number, number]) => [value, old?.[1]])
+					}
+					className="max-w-sm"
+				/>
+				<DebouncedInput
+					type="number"
+					placeholder="NRG max..."
+					value={
+						(
+							table.getColumn("energy")?.getFilterValue() as [number, number]
+						)?.[1] ?? ""
+					}
+					onChange={(value) =>
+						table
+							.getColumn("energy")
+							?.setFilterValue((old: [number, number]) => [old?.[0], value])
+					}
+					className="max-w-sm"
+				/>
+				<Button
+					onClick={() => {
+						table.resetColumnFilters(true);
+					}}
+				>
+					Reset filters
+				</Button>
 			</div>
 			<div className="rounded-md border">
 				<Table>
@@ -108,11 +169,6 @@ export function DataTable<TData, TValue>({
 															desc: <ArrowDown />,
 														}[header.column.getIsSorted() as string] ?? null}
 													</div>
-													{header.column.getCanFilter() ? (
-														<div>
-															<Filter column={header.column} table={table} />
-														</div>
-													) : null}
 												</>
 											)}
 										</TableHead>
@@ -151,7 +207,17 @@ export function DataTable<TData, TValue>({
 					</TableBody>
 				</Table>
 			</div>
-			<div className="flex items-center justify-end space-x-2 py-4">
+			<div className="flex items-center gap-2 my-4">
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => {
+						table.setPageIndex(0);
+					}}
+					disabled={!table.getCanPreviousPage()}
+				>
+					{"<<"}
+				</Button>
 				<Button
 					variant="outline"
 					size="sm"
@@ -172,7 +238,25 @@ export function DataTable<TData, TValue>({
 				>
 					Next
 				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => {
+						table.setPageIndex(table.getPageCount() - 1);
+					}}
+					disabled={!table.getCanNextPage()}
+				>
+					{">>"}
+				</Button>
+				<span className="flex items-center gap-1">
+					<div>Page</div>
+					<strong>
+						{table.getState().pagination.pageIndex + 1} of{" "}
+						{table.getPageCount()}
+					</strong>
+				</span>
 			</div>
+			<div>{table.getPrePaginationRowModel().rows.length} Rows</div>
 		</div>
 	);
 }

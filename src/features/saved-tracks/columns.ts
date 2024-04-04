@@ -9,8 +9,9 @@ export const columns: Array<
 	ColumnDef<SavedTrack & { audioFeature?: AudioFeatures }>
 > = [
 	{
+		id: "title",
 		accessorKey: "track.name",
-		header: "Name",
+		header: "Title",
 	},
 	{
 		id: "artists",
@@ -74,7 +75,7 @@ export const columns: Array<
 				minimumFractionDigits: 2,
 			});
 		},
-		filterFn: "inNumberRange",
+		footer: (props) => props.column.id,
 	},
 	{
 		id: "instrumentalness",
