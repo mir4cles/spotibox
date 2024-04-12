@@ -5,7 +5,7 @@ import {
 	type SpotifyApi,
 } from "@spotify/web-api-ts-sdk";
 import { useQuery } from "@tanstack/react-query";
-import { Fragment } from "react";
+import { Fragment, useCallback } from "react";
 import { columns } from "../features/saved-tracks/columns";
 import { DataTable } from "../features/saved-tracks/components/data-table";
 import { useSpotify } from "../hooks/UseSpotify";
@@ -66,8 +66,29 @@ async function fetchAllPaginatedData(offset = 0, sdk: SpotifyApi) {
 	}
 }
 
+export async function addSongsToPlaylist(
+	sdk: SpotifyApi,
+	playlistId: string,
+	trackUris: string[]
+) {
+	await sdk.playlists.addItemsToPlaylist(playlistId, trackUris);
+}
+
+export async function createSpotifyPlaylist(
+	sdk: SpotifyApi,
+	request: {
+		name: string;
+		description: string;
+		public: boolean;
+		collaborative: boolean;
+	}
+) {
+	const { id: userId } = await sdk.currentUser.profile();
+	return await sdk.playlists.createPlaylist(userId, request);
+}
+
 const Demo = ({ sdk }: { sdk: SpotifyApi }) => {
-	const query = useQuery({
+	const { data, isError, error } = useQuery({
 		queryKey: ["savedTracks"],
 		queryFn: async () => {
 			await fetchAllPaginatedData(0, sdk);
@@ -77,13 +98,40 @@ const Demo = ({ sdk }: { sdk: SpotifyApi }) => {
 		staleTime: Number.POSITIVE_INFINITY,
 	});
 
-	if (!query.data) {
+	const handleAddSongs = useCallback(
+		async (trackUris: string[]) => {
+			const playlist = await createSpotifyPlaylist(sdk, {
+				name: "New Playlist",
+				description: "Created from selected songs",
+				public: true,
+				collaborative: false,
+			});
+
+			await addSongsToPlaylist(sdk, playlist.id, trackUris);
+		},
+		[sdk]
+	);
+
+	// const { trackUrl } = Route.useSearch();
+
+	if (!data) {
 		return <Fragment>Loading...</Fragment>;
 	}
 
+	if (isError) {
+		return <div>Error: {error.message}</div>;
+	}
+
 	return (
-		<div className="container mx-auto py-10">
-			<DataTable columns={columns} data={query.data} />
+		<div className="container">
+			<DataTable
+				columns={columns}
+				data={data}
+				handleAddSongs={handleAddSongs}
+			/>
+			{/* {trackUrl && (
+				<Spotify wide link={trackUrl} allow="autoplay; encrypted-media;" />
+			)} */}
 		</div>
 	);
 };
@@ -92,7 +140,12 @@ export default function DemoRoute() {
 	const sdk = useSpotify(
 		import.meta.env["VITE_SPOTIFY_CLIENT_ID"] as string,
 		import.meta.env["VITE_REDIRECT_TARGET"] as string,
-		[...Scopes.userLibraryRead, ...Scopes.playlistRead, ...Scopes.userDetails]
+		[
+			...Scopes.userLibraryRead,
+			...Scopes.playlistRead,
+			...Scopes.playlistModify,
+			...Scopes.userDetails,
+		]
 	);
 
 	return sdk ? <Demo sdk={sdk} /> : <Fragment>Error</Fragment>;

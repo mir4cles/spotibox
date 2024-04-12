@@ -1,6 +1,11 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import DemoRoute from "../pages/Demo";
 
-export const Route = createLazyFileRoute("/demo")({
+export const Route = createFileRoute("/demo")({
 	component: DemoRoute,
+	validateSearch: (search: { trackUrl?: string }) => {
+		return {
+			trackUrl: search.trackUrl || "",
+		};
+	},
 });

@@ -4,10 +4,54 @@ import type {
 	SimplifiedArtist,
 } from "@spotify/web-api-ts-sdk";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Checkbox } from "../../components/ui/checkbox";
 
-export const columns: Array<
-	ColumnDef<SavedTrack & { audioFeature?: AudioFeatures }>
-> = [
+export const columns: ColumnDef<
+	SavedTrack & { audioFeature?: AudioFeatures }
+>[] = [
+	{
+		id: "select",
+		header: ({ table }) => (
+			<Checkbox
+				checked={
+					table.getIsAllPageRowsSelected() ||
+					(table.getIsSomePageRowsSelected() && "indeterminate")
+				}
+				onCheckedChange={(value) => {
+					table.toggleAllPageRowsSelected(!!value);
+				}}
+				aria-label="Select all"
+			/>
+		),
+		cell: ({ row }) => (
+			<Checkbox
+				checked={row.getIsSelected()}
+				disabled={!row.getCanSelect()}
+				onCheckedChange={row.getToggleSelectedHandler()}
+				aria-label="Select row"
+			/>
+		),
+		enableSorting: false,
+		enableHiding: false,
+	},
+	// TODO: Implement play button
+	// {
+	// 	id: "play",
+	// 	cell: ({ row }) => {
+	// 		const navigate = useNavigate();
+	// 		const trackUrl = row.original.track.external_urls.spotify;
+	// 		return (
+	// 			<Button
+	// 				variant="ghost"
+	// 				onClick={() => navigate({ search: { trackUrl } })}
+	// 			>
+	// 				<CirclePlay />
+	// 			</Button>
+	// 		);
+	// 	},
+	// 	enableSorting: false,
+	// 	enableHiding: false,
+	// },
 	{
 		id: "title",
 		accessorKey: "track.name",
@@ -16,7 +60,15 @@ export const columns: Array<
 	{
 		id: "artists",
 		accessorKey: "track.artists",
-		enableSorting: false,
+		sortingFn: (rowA, rowB) => {
+			const artistsA: Array<SimplifiedArtist> = rowA.getValue("artists");
+			const artistsB: Array<SimplifiedArtist> = rowB.getValue("artists");
+
+			const artistA = artistsA.map((artist) => artist.name).join(", ");
+			const artistB = artistsB.map((artist) => artist.name).join(", ");
+
+			return artistA.localeCompare(artistB);
+		},
 		header: "Artists",
 		cell: ({ row }) => {
 			const artists: Array<SimplifiedArtist> = row.getValue("artists");

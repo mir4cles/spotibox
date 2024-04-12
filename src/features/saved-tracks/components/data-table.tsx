@@ -10,7 +10,7 @@ import {
 	type SortingState,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import {
 	Table,
@@ -25,28 +25,33 @@ import DebouncedInput from "./debounced-input";
 interface DataTableProps<TData, TValue> {
 	columns: Array<ColumnDef<TData, TValue>>;
 	data: Array<TData>;
+	handleAddSongs: (trackUris: string[]) => Promise<void>;
 }
 
 export function DataTable<TData, TValue>({
 	columns,
 	data,
+	handleAddSongs,
 }: DataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = useState<SortingState>([]);
-
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [rowSelection, setRowSelection] = useState({});
 
 	const table = useReactTable({
 		data,
 		columns,
+		enableRowSelection: true,
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		onColumnFiltersChange: setColumnFilters,
+		onRowSelectionChange: setRowSelection,
 		onSortingChange: setSorting,
 		state: {
 			sorting,
 			columnFilters,
+			rowSelection,
 		},
 		initialState: {
 			pagination: {
@@ -55,8 +60,26 @@ export function DataTable<TData, TValue>({
 		},
 	});
 
+	// TODO: type this
+	const selectedTracks = useMemo(() => {
+		const trackUris = table
+			.getSelectedRowModel()
+			.rows.map((row) => row.original.track.uri as string);
+		return trackUris;
+	}, [table]);
+
+	console.log(selectedTracks);
+
 	return (
-		<div>
+		<div className="h-screen flex flex-col">
+			<button
+				type="button"
+				onClick={async () => {
+					await handleAddSongs(selectedTracks);
+				}}
+			>
+				Create Playlist from Selected Songs
+			</button>
 			<div className="flex items-center py-4 gap-4">
 				<DebouncedInput
 					placeholder="Filter title..."
@@ -132,7 +155,7 @@ export function DataTable<TData, TValue>({
 					Reset filters
 				</Button>
 			</div>
-			<div className="rounded-md border">
+			<div className="rounded-md border overflow-y-auto">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -255,8 +278,8 @@ export function DataTable<TData, TValue>({
 						{table.getPageCount()}
 					</strong>
 				</span>
+				<div>({table.getPrePaginationRowModel().rows.length} Rows)</div>
 			</div>
-			<div>{table.getPrePaginationRowModel().rows.length} Rows</div>
 		</div>
 	);
 }
